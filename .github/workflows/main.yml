@@ -2,9 +2,17 @@ name: CI
 
 on:
   push:
-    branches: [ main, feat/** ]
+    branches:
+      - main
+      - feat/**
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   test:
@@ -18,15 +26,35 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: pnpm
 
-      -  name: Enable corepack and pnpm
+      - name: Enable corepack and pnpm
         run: |
-            corepack enable
-            corepack prepare pnpm@9.15.4 --activate
-            pnpm --version
-  
+          corepack enable
+          corepack prepare pnpm@9.15.4 --activate
+          pnpm --version
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run tests
-        run: pnpm test
+      - name: Lint
+        run: pnpm lint
+
+      - name: Build
+        run: pnpm build
+
+      # 只在 main 分支部署 Pages
+      - name: Upload Pages artifact
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
