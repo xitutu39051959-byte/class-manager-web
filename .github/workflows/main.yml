@@ -19,8 +19,8 @@ jobs:
         with:
           node-version: 20
 
-      - name: Enable corepack
-        run:
+      -  name: Enable corepack and pnpm
+        run: |
             corepack enable
             corepack prepare pnpm@9.15.4 --activate
             pnpm --version
