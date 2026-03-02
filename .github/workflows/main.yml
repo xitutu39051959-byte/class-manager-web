@@ -59,7 +59,7 @@ jobs:
         run: pnpm lint
 
       - name: Build
-        run: pnpm build
+        run: pnpm build -- --base=/class-manager-web/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
