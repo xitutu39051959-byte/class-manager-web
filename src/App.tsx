@@ -1,34 +1,35 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+﻿import { useEffect, useMemo, useState } from 'react'
 import './App.css'
+import AppShell from './components/AppShell'
+import { navigate, parseLocation, subscribe, type Route } from './router'
+import StudentsPage from './pages/StudentsPage'
+import WorkbenchPage from './pages/WorkbenchPage'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [route, setRoute] = useState<Route>(() => parseLocation())
+
+  useEffect(() => {
+    const unsubscribe = subscribe(() => {
+      setRoute(parseLocation())
+    })
+    return unsubscribe
+  }, [])
+
+  useEffect(() => {
+    if (route.name === 'unknown') {
+      navigate('/', true)
+    }
+  }, [route])
+
+  const currentPath = useMemo<'/' | '/students'>(() => {
+    if (route.name === 'students') return '/students'
+    return '/'
+  }, [route])
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <AppShell currentPath={currentPath} onNavigate={(path) => navigate(path)}>
+      {route.name === 'students' ? <StudentsPage /> : <WorkbenchPage />}
+    </AppShell>
   )
 }
 
